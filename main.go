@@ -9,7 +9,7 @@ import (
 
 var usageMessage = `Usage: uhttpd [flags] [path]
 If no path is specified, it picks automatically the one
-in which the command was invoked.
+in which the command was invoked (working directory).
 When both certificate and private key files are specified
 uhttpd will start HTTPS server instead of (unsecured) HTTP.
 Flags:
