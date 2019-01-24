@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var usageMessage = `Usage: uhttpd [-l] [-a] [path]
+var usageMessage = `Usage: uhttpd [flags] [path]
 If no path is specified, it picks automatically the one
 in which the command was invoked.
 When both certificate and private key files are specified
