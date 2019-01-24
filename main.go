@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"sync"
 )
 
 var usageMessage = `Usage: uhttpd [flags] [path]
@@ -41,15 +43,40 @@ func main() {
 		rootPath = deriveWorkingDir()
 	}
 
-	//Check if user wants an HTTP or HTTPS server
+	//Create new server
+	s := NewSimpleServer(*addr, *port, rootPath)
+
+	//Register function that calls s.Shutdown once
+	//the program receives interrupt signal
+	wg := registerCleanupFunction(s)
+
+	//Check if user wants an HTTP or HTTPS server and start
 	if *cert != "" || *prvKey != "" {
 		//TODO: sanitize path to certificate and private key
-		startHTTPSServer(*addr, *port, rootPath, *cert, *prvKey)
+		s.StartHTTPSServer(*cert, *prvKey)
 	} else {
-		startHTTPServer(*addr, *port, rootPath)
+		s.StartHTTPServer()
 	}
-	//TODO: graceful shutdown, any resource cleanup?
+	//Wait for cleanup function to finish
+	wg.Wait()
+	log.Println("Exited")
+}
 
+func registerCleanupFunction(s SimpleServer) *sync.WaitGroup {
+	wg := new(sync.WaitGroup)
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		//Register handler for interrupt signal
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt)
+		//Wait for interr signal
+		<-sigint
+
+		// We received an interrupt signal, shut down.
+		s.Shutdown()
+	}()
+	return wg
 }
 
 func deriveWorkingDir() string {
