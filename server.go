@@ -70,7 +70,7 @@ func (s SimpleServer) StartHTTPSServer(certFile, keyFile string) {
 	//Start the HTTPS server
 	log.Println("uHTTP (secure) server listening")
 	//TODO: find a better way to pass certificate and key
-	//TODO: Write custom handle that forces redirect/redial with TLS
+	//TODO: Write custom handle that forces redirect/redial with TLS: 301 Moved Permanently
 	err := s.srv.ListenAndServeTLS(certFile, keyFile)
 	if err != http.ErrServerClosed {
 		log.Fatal("Server unexpectedly crashed:", err)
